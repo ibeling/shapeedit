@@ -100,6 +100,7 @@ static Mesh g_currentMesh;
 
 static bool g_wireframeMode;
 static vector<handleType>::iterator g_clickedHandle;
+static bool g_updateScheduled = false;
 
 // C A L L B A C K S ///////////////////////////////////////////////////
 
@@ -205,8 +206,9 @@ static void addClosestVertexOrDeleteHandle(const int& xclick, const int& yclick)
 }
 
 static void evolveCallback(int whatever) {
-	if (!doIteration(g_currentMesh, g_handles))
+	if (g_updateScheduled = !doIteration(g_currentMesh, g_handles))
 		glutTimerFunc(1000 / g_iterationsPerSecond, evolveCallback, 0);
+	glutPostRedisplay();
 }
 
 static void moveClosestHandle(const int& prevClickX, const int& prevClickY, const int& newClickX, const int& newClickY) {
@@ -214,7 +216,37 @@ static void moveClosestHandle(const int& prevClickX, const int& prevClickY, cons
 	Cvec2 displacement = Cvec2(2.0*((double)(newClickX - prevClickX)) / g_width, 2.0*((double)(newClickY - prevClickY)) / g_height);
 	g_clickedHandle->second += displacement;
 	afterMove(g_currentMesh, g_handles);
-	evolveCallback(0);
+	if (!g_updateScheduled) evolveCallback(0);
+}
+
+static void loadMeshGeometry(Mesh& m, GeometryPX& g) {
+	vector<GLfloat> pos, tex;
+	for (int i = 0; i < m.getNumFaces(); ++i) {
+		const Mesh::Face f = m.getFace(i);
+		for (int j = 0; j < f.getNumVertices(); ++j) {
+			const Mesh::Vertex v = f.getVertex(j);
+			pos.push_back((GLfloat)v.getPosition()[0]);
+			pos.push_back((GLfloat)v.getPosition()[1]);
+			tex.push_back((GLfloat)v.getTexCoords()[0]);
+			tex.push_back((GLfloat)v.getTexCoords()[1]);
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, g.posVbo);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		(pos.size())*sizeof(GLfloat),
+		&pos[0],
+		GL_STATIC_DRAW);
+	checkGlErrors();
+
+	glBindBuffer(GL_ARRAY_BUFFER, g.texVbo);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		(tex.size())*sizeof(GLfloat),
+		&tex[0],
+		GL_STATIC_DRAW);
+	checkGlErrors();
 }
 
 // _____________________________________________________
@@ -233,6 +265,7 @@ static void display(void) {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  loadMeshGeometry(g_currentMesh, *g_geometry);
   drawSquare(*g_squareShaderState, *g_geometry, *g_tex, false);
   drawHandles();
 
@@ -396,40 +429,7 @@ static void initShaders() {
   loadSquareShader(*g_squareShaderState);
 }
 
-static Cvec2 getTexCoord(const Mesh::Vertex v) {
-  return Cvec2((v.getPosition()[0] + 1.0) / 2.0, (v.getPosition()[1] + 1.0) / 2.0);
-}
 
-static void loadMeshGeometry(Mesh& m, GeometryPX& g) {
-  vector<GLfloat> pos, tex;
-  for (int i = 0; i < m.getNumFaces(); ++i) {
-	  const Mesh::Face f = m.getFace(i);
-	  for (int j = 0; j < f.getNumVertices(); ++j) {
-		  const Mesh::Vertex v = f.getVertex(j);
-		  cout << v.getPosition()[0] << " " << v.getPosition()[1] << endl;
-		  pos.push_back((GLfloat)v.getPosition()[0]);
-		  pos.push_back((GLfloat)v.getPosition()[1]);
-		  tex.push_back((GLfloat)v.getTexCoords()[0]);
-		  tex.push_back((GLfloat)v.getTexCoords()[1]);
-	  }
-  }
-
-  glBindBuffer(GL_ARRAY_BUFFER, g.posVbo);
-  glBufferData(
-    GL_ARRAY_BUFFER,
-    (pos.size())*sizeof(GLfloat),
-    &pos[0],
-    GL_STATIC_DRAW);
-  checkGlErrors();
-
-  glBindBuffer(GL_ARRAY_BUFFER, g.texVbo);
-  glBufferData(
-    GL_ARRAY_BUFFER,
-    (tex.size())*sizeof(GLfloat),
-    &tex[0],
-    GL_STATIC_DRAW);
-  checkGlErrors();
-}
 
 
 static void initMeshAndGeometry() {
@@ -497,6 +497,8 @@ int main(int argc, char **argv) {
     initShaders();
     initMeshAndGeometry();
     initTextures();
+
+	initPoisson(g_currentMesh);
 
     glutMainLoop();
     return 0;

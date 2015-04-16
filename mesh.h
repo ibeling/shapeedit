@@ -247,8 +247,8 @@ public:
     const int v_;
 
     Vertex(Mesh& m, const int v) : m_(m), v_(v)                 {}
-    Cvec3 getPosition() const {
-      return m_.vertex_[v_].position_;
+    Cvec2 getPosition() const {
+      return Cvec2(m_.vertex_[v_].position_);
     }
     Cvec3 getNormal() const {
       assert(m_.vertex_[v_].normal_[0] > -1e37 || !"Error: This normal is uninitialized, you can set it with setNormal()");
@@ -257,8 +257,8 @@ public:
 	Cvec2 getTexCoords() const {
 	  return m_.vertex_[v_].texcoords_;
 	}
-    void setPosition(const Cvec3& p) const {
-      m_.vertex_[v_].position_ = p;
+    void setPosition(const Cvec2& p) const {
+      m_.vertex_[v_].position_ = Cvec3(p);
     }
     void setNormal(const Cvec3& n) const {
       m_.vertex_[v_].normal_ = n;
