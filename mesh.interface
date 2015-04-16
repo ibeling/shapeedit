@@ -7,9 +7,10 @@ public:
 
   // Mesh::Vertex class
   struct Vertex {
-    Cvec3 getPosition() const;
+    // position is 2D, and must be in the square[-1,1]x [-1,1]
+    Cvec2 getPosition() const;
     Cvec3 getNormal() const;
-    void setPosition(const Cvec3& p) const;
+    void setPosition(const Cvec2& p) const;
     void setNormal(const Cvec3& n) const;
     VertexIterator getIterator() const;
     int getIndex() const;
