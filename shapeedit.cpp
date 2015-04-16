@@ -48,8 +48,8 @@ using namespace std::tr1; // for shared_ptr
 static const bool g_Gl2Compatible = false;
 
 
-static int g_width             = 512;       // screen width
-static int g_height            = 512;       // screen height
+static int g_width             = 490;       // screen width
+static int g_height            = 490;       // screen height
 static bool g_leftClicked      = false;     // is the left mouse button down?
 static bool g_rightClicked     = false;     // is the right mouse button down?
 static float g_objScale        = 1.0;       // scale factor for object
@@ -459,7 +459,7 @@ static void loadTexture(GLuint texHandle, const char *ppmFilename) {
 
 static void initTextures() {
   g_tex.reset(new GlTexture());
-  loadTexture(*g_tex, "smiley.ppm");
+  loadTexture(*g_tex, "yummy.ppm");
 }
 
 
