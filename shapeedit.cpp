@@ -326,7 +326,9 @@ static void keyboard(unsigned char key, int x, int y) {
     cout << " ============== H E L P ==============\n\n"
     << "h\t\thelp menu\n"
     << "s\t\tsave screenshot\n"
-    << "drag right mouse to change square size\n";
+	<< "w\t\ttoggle wireframe mode\n"
+    << "\t\tright click to add or remove handles\n"
+	<< "\t\tleft click drag to move handles\n" << endl;
     break;
   case 'q':
     exit(0);

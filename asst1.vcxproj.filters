@@ -47,11 +47,5 @@
     <None Include="shaders\sq-tex-gl3.fshader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\sq-solid-gl3.vshader">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\sq-solid-gl3.fshader">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>
