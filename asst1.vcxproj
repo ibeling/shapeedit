@@ -14,6 +14,7 @@
     <ProjectGuid>{F83AB71F-D4B0-4B9E-86F5-DC77C0D89D8D}</ProjectGuid>
     <RootNamespace>asst1</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>shapeedit</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -99,15 +100,19 @@
   <ItemGroup>
     <ClCompile Include="glsupport.cpp" />
     <ClCompile Include="ppm.cpp" />
-    <ClCompile Include="edit.cpp" />
+    <ClCompile Include="shapeedit.cpp" />
+    <ClCompile Include="poisson.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cvec.h" />
     <ClInclude Include="glsupport.h" />
+    <ClInclude Include="poisson.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="ppm.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\sq-solid-gl3.fshader" />
+    <None Include="shaders\sq-solid-gl3.vshader" />
     <None Include="shaders\sq-tex-gl3.fshader" />
     <None Include="shaders\sq-tex-gl3.vshader" />
   </ItemGroup>

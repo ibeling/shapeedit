@@ -1,4 +1,4 @@
-BASE = asst1
+BASE = shapeedit
 
 all: $(BASE)
 
@@ -17,7 +17,7 @@ endif
 
 ifdef OPT 
   #turn on optimization
-  CXXFLAGS += -O2
+  CXXFLAGS += -O3
 else 
   #turn on debugging
   CXXFLAGS += -g

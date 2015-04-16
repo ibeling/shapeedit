@@ -16,7 +16,10 @@
     <ClCompile Include="glsupport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edit.cpp">
+    <ClCompile Include="shapeedit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="poisson.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -33,12 +36,21 @@
     <ClInclude Include="cvec.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="poisson.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\sq-tex-gl3.vshader">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\sq-tex-gl3.fshader">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sq-solid-gl3.vshader">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sq-solid-gl3.fshader">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

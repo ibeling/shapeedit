@@ -20,6 +20,7 @@ class Mesh {
   struct vertex_t {
     Cvec3 position_;
     Cvec3 normal_;
+	Cvec2 texcoords_;
     int halfedge_;
   };
   struct edge_t {
@@ -99,6 +100,8 @@ class Mesh {
     face_.resize(nt+nq);
     for (int i = 0; i < nv; ++i) {
       f >> vertex_[i].position_[0] >> vertex_[i].position_[1] >> vertex_[i].position_[2];
+	  vertex_[i].texcoords_[0] = (vertex_[i].position_[0] + 1.0) / 2.0;
+	  vertex_[i].texcoords_[1] = (vertex_[i].position_[1] + 1.0) / 2.0;
     }
     for (int i = 0; i < nt; ++i) {
       f >> face_[i].vertex_[0] >> face_[i].vertex_[1] >> face_[i].vertex_[2];
@@ -251,6 +254,9 @@ public:
       assert(m_.vertex_[v_].normal_[0] > -1e37 || !"Error: This normal is uninitialized, you can set it with setNormal()");
       return m_.vertex_[v_].normal_;
     }
+	Cvec2 getTexCoords() const {
+	  return m_.vertex_[v_].texcoords_;
+	}
     void setPosition(const Cvec3& p) const {
       m_.vertex_[v_].position_ = p;
     }
