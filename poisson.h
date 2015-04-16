@@ -1,3 +1,6 @@
+#ifndef POISSON_H
+#define POISSON_H
+
 #include <vector>
 #include "cvec.h"
 #include "mesh.h"
