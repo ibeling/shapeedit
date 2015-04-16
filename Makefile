@@ -25,7 +25,7 @@ endif
 
 CXX = g++ 
 
-OBJ = $(BASE).o ppm.o glsupport.o
+OBJ = $(BASE).o ppm.o glsupport.o cvec.o mesh.o poisson.o
 
 $(BASE): $(OBJ)
 	$(LINK.cpp) -o $@ $^ $(LIBS) -lGLEW 
