@@ -152,7 +152,7 @@ static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& g
 static const double g_halfsquaresize = 0.015;
 
 static void drawHandles() {
-	for (auto it = g_handles.begin(); it != g_handles.end(); ++it) {
+	for (vector<handleType>::iterator it = g_handles.begin(); it != g_handles.end(); ++it) {
 		vector<GLfloat> pos;
 		const Cvec2 point0 = it->second + Cvec2(-g_halfsquaresize, g_halfsquaresize);
 		const Cvec2 point1 = it->second + Cvec2(g_halfsquaresize, g_halfsquaresize);

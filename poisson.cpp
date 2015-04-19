@@ -38,7 +38,7 @@ bool doIteration(Mesh& m, vector<handleType>& handles) {
 // TODO
 // Currently, this just moves every vertex directly.
 //
-	for (auto i : handles)
-		m.getVertex(i.first).setPosition(i.second);
+	for (vector<handleType>::iterator i = handles.begin(); i != handles.end(); ++i)
+		m.getVertex(i->first).setPosition(i->second);
 	return true;
 }
