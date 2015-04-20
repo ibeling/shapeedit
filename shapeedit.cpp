@@ -60,7 +60,6 @@ extern int g_iterationsPerSecond;
 // our global shader states
 struct SquareShaderState {
   GlProgram program;
-  GlArrayObject vao;
 
   // Handles to uniform variables
   GLint h_uTex;
@@ -71,13 +70,7 @@ struct SquareShaderState {
   GLint h_aTexCoord;
 };
 
-struct HandleShaderState {
-	GlProgram program;
-	GlArrayObject vao;
-
-	// Handles to vertex attributes
-	GLint h_aPosition;
-};
+static shared_ptr<GlArrayObject> g_vao;
 
 static shared_ptr<SquareShaderState> g_squareShaderState;
 
@@ -108,7 +101,7 @@ static bool g_updateScheduled = false;
 
 static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& geometry, const GlTexture& tex, bool handle) {
   // using a VAO is necessary to run on OS X.
-  glBindVertexArray(shaderState.vao);
+  glBindVertexArray(*g_vao);
 
   // bind textures
   glActiveTexture(GL_TEXTURE0);
@@ -426,6 +419,7 @@ static void loadSquareShader(SquareShaderState& ss) {
 
 static void initShaders() {
   g_squareShaderState.reset(new SquareShaderState);
+  g_vao.reset(new GlArrayObject());
   loadSquareShader(*g_squareShaderState);
 }
 
