@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <string>
 
 #include "cvec.h"
 
