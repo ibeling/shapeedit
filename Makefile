@@ -25,10 +25,10 @@ endif
 
 CXX = g++ 
 
-OBJ = $(BASE).o ppm.o glsupport.o cvec.o mesh.o poisson.o
+OBJ = $(BASE).o ppm.o glsupport.o poisson.o
 
 $(BASE): $(OBJ)
-	$(LINK.cpp) -o $@ $^ $(LIBS) -lGLEW 
+	$(LINK.cpp) -o $@ $^ $(LIBS)
 
 clean:
 	rm -f $(OBJ) $(BASE)
