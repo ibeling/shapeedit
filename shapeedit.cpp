@@ -79,7 +79,6 @@ static shared_ptr<GlTexture> g_tex, g_handleTex;
 
 // our global geometries
 struct GeometryPX {
-  GlArrayObject vao;
   GlBufferObject posVbo, texVbo;
 };
 
@@ -102,7 +101,7 @@ static bool g_updateScheduled = false;
 
 static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& geometry, const GlTexture& tex, bool handle) {
   // using a VAO is necessary to run on OS X.
-  glBindVertexArray(geometry.vao);
+  glBindVertexArray(*g_vao);
 
   // bind textures
   glActiveTexture(GL_TEXTURE0);
