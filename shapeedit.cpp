@@ -77,7 +77,7 @@ static shared_ptr<GlArrayObject> g_vao;
 static shared_ptr<SquareShaderState> g_squareShaderState;
 
 // our global texture instance
-static shared_ptr<GlTexture> g_tex, g_handleTex;
+static shared_ptr<GlTexture> g_tex;
 
 // our global geometries
 struct GeometryPX {
@@ -86,7 +86,7 @@ struct GeometryPX {
 };
 
 static shared_ptr<GeometryPX> g_geometry;
-static shared_ptr<GeometryPX> g_squareGeo;
+static shared_ptr<GeometryPX> g_handleGeometry;
 
 
 
@@ -153,7 +153,7 @@ static const double g_halfsquaresize = 0.015;
 
 static void drawHandles() {
 	for (vector<handleType>::iterator it = g_handles.begin(); it != g_handles.end(); ++it) {
-		drawSquare(*g_squareShaderState, *g_squareGeo, *g_tex, true, it->second);
+		drawSquare(*g_squareShaderState, *g_handleGeometry, *g_tex, true, it->second);
 	}
 }
 
@@ -198,63 +198,28 @@ static void moveClosestHandle(const int& prevClickX, const int& prevClickY, cons
 	if (!g_updateScheduled) evolveCallback(0);
 }
 
-static void loadMeshGeometry(Mesh& m, GeometryPX& g) {
+static void loadMeshGeometry(Mesh& m, GeometryPX& g, float posScale) {
 	vector<GLfloat> pos, tex;
 	for (int i = 0; i < m.getNumFaces(); ++i) {
 		const Mesh::Face f = m.getFace(i);
 		for (int j = 0; j < f.getNumVertices(); ++j) {
 			const Mesh::Vertex v = f.getVertex(j);
-			pos.push_back((GLfloat)v.getPosition()[0]);
-			pos.push_back((GLfloat)v.getPosition()[1]);
+			pos.push_back((GLfloat)(v.getPosition()[0] * posScale));
+			pos.push_back((GLfloat)(v.getPosition()[1] * posScale));
 			tex.push_back((GLfloat)v.getTexCoords()[0]);
 			tex.push_back((GLfloat)v.getTexCoords()[1]);
 		}
 	}
 
+	const unsigned int size = pos.size() * sizeof(GLfloat);
 	glBindBuffer(GL_ARRAY_BUFFER, g.posVbo);
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		(pos.size())*sizeof(GLfloat),
-		&pos[0],
-		GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, &pos[0]);
 	checkGlErrors();
 
 	glBindBuffer(GL_ARRAY_BUFFER, g.texVbo);
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		(tex.size())*sizeof(GLfloat),
-		&tex[0],
-		GL_STATIC_DRAW);
-	checkGlErrors();
-}
-
-static void loadMeshGeometryTenth(Mesh& m, GeometryPX& g) {
-	vector<GLfloat> pos, tex;
-	for (int i = 0; i < m.getNumFaces(); ++i) {
-		const Mesh::Face f = m.getFace(i);
-		for (int j = 0; j < f.getNumVertices(); ++j) {
-			const Mesh::Vertex v = f.getVertex(j);
-			pos.push_back((GLfloat)(v.getPosition()[0] * 0.1));
-			pos.push_back((GLfloat)(v.getPosition()[1] * 0.1));
-			tex.push_back((GLfloat)v.getTexCoords()[0]);
-			tex.push_back((GLfloat)v.getTexCoords()[1]);
-		}
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, g.posVbo);
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		(pos.size())*sizeof(GLfloat),
-		&pos[0],
-		GL_STATIC_DRAW);
-	checkGlErrors();
-
-	glBindBuffer(GL_ARRAY_BUFFER, g.texVbo);
-	glBufferData(
-		GL_ARRAY_BUFFER,
-		(tex.size())*sizeof(GLfloat),
-		&tex[0],
-		GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, &tex[0]);
 	checkGlErrors();
 }
 
@@ -274,7 +239,7 @@ static void display(void) {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  loadMeshGeometry(g_currentMesh, *g_geometry);
+  loadMeshGeometry(g_currentMesh, *g_geometry, 1.0);
   drawSquare(*g_squareShaderState, *g_geometry, *g_tex, false, Cvec2());
   drawHandles();
 
@@ -448,9 +413,9 @@ static void initMeshAndGeometry() {
   g_originalMesh.load("square.mesh");
   g_currentMesh = g_originalMesh;
   g_geometry.reset(new GeometryPX());
-  loadMeshGeometry(g_currentMesh, *g_geometry);
-  g_squareGeo.reset(new GeometryPX());
-  loadMeshGeometryTenth(g_currentMesh, *g_squareGeo);
+  loadMeshGeometry(g_currentMesh, *g_geometry, 1.0);
+  g_handleGeometry.reset(new GeometryPX());
+  loadMeshGeometry(g_originalMesh, *g_handleGeometry, 0.02);
 }
 
 static void loadTexture(GLuint texHandle, const char *ppmFilename) {
