@@ -149,8 +149,6 @@ static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& g
   checkGlErrors();
 }
 
-static const double g_halfsquaresize = 0.015;
-
 static void drawHandles() {
 	for (vector<handleType>::iterator it = g_handles.begin(); it != g_handles.end(); ++it) {
 		drawSquare(*g_squareShaderState, *g_handleGeometry, *g_tex, true, it->second);
