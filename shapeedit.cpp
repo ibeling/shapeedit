@@ -93,7 +93,7 @@ static Mesh g_originalMesh;
 static Mesh g_currentMesh;
 
 static bool g_wireframeMode;
-static vector<handleType>::iterator g_clickedHandle;
+static int g_clickedHandle;
 static bool g_updateScheduled = false;
 
 // C A L L B A C K S ///////////////////////////////////////////////////
@@ -146,12 +146,12 @@ static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& g
 static const double g_halfsquaresize = 0.015;
 
 static void drawHandles() {
-	for (vector<handleType>::iterator it = g_handles.begin(); it != g_handles.end(); ++it) {
+	for (int it = 0; it != g_handles.size(); ++it) {
 		vector<GLfloat> pos;
-		const Cvec2 point0 = it->second + Cvec2(-g_halfsquaresize, g_halfsquaresize);
-		const Cvec2 point1 = it->second + Cvec2(g_halfsquaresize, g_halfsquaresize);
-		const Cvec2 point2 = it->second + Cvec2(-g_halfsquaresize, -g_halfsquaresize);
-		const Cvec2 point3 = it->second + Cvec2(g_halfsquaresize, -g_halfsquaresize);
+		const Cvec2 point0 = g_handles[it].second + Cvec2(-g_halfsquaresize, g_halfsquaresize);
+		const Cvec2 point1 = g_handles[it].second + Cvec2(g_halfsquaresize, g_halfsquaresize);
+		const Cvec2 point2 = g_handles[it].second + Cvec2(-g_halfsquaresize, -g_halfsquaresize);
+		const Cvec2 point3 = g_handles[it].second + Cvec2(g_halfsquaresize, -g_halfsquaresize);
 		pos.push_back((GLfloat)point0[0]); pos.push_back((GLfloat)point0[1]);
 		pos.push_back((GLfloat)point2[0]); pos.push_back((GLfloat)point2[1]);
 		pos.push_back((GLfloat)point3[0]); pos.push_back((GLfloat)point3[1]);
@@ -172,13 +172,13 @@ static void drawHandles() {
 	}
 }
 
-static pair<vector<handleType>::iterator, double> findClosestPoint(const int& xclick, const int& yclick, vector<handleType>& searchDomain) {
+static pair<int, double> findClosestPoint(const int& xclick, const int& yclick, vector<handleType>& searchDomain) {
 	Cvec2 point = Cvec2(((double) xclick) / g_width, ((double) yclick) / g_height);
 	point = point * 2 - Cvec2(1.0, 1.0);
 	double min_dist = 1.0/CS175_EPS2;
-	vector<handleType>::iterator argmin;
-	for (vector<handleType>::iterator it = searchDomain.begin(); it != searchDomain.end(); ++it) {
-		const double dist = norm2(point - it->second);
+	int argmin;
+	for (int it = 0; it != searchDomain.size(); ++it) {
+		const double dist = norm2(point - searchDomain[it].second);
 		if (dist < min_dist) {
 			min_dist = dist;
 			argmin = it;
@@ -191,12 +191,13 @@ static void addClosestVertexOrDeleteHandle(const int& xclick, const int& yclick)
 	vector<pair<int, Cvec2> > vertices;
 	for (int i = 0; i < g_currentMesh.getNumVertices(); ++i)
 		vertices.push_back(make_pair(i, Cvec2(g_currentMesh.getVertex(i).getPosition())));
-	pair<vector<handleType>::iterator, double> closestVertex = findClosestPoint(xclick, yclick, vertices);
-	pair<vector<handleType>::iterator, double> closestHandle = findClosestPoint(xclick, yclick, g_handles);
+	pair<int, double> closestVertex = findClosestPoint(xclick, yclick, vertices);
+	pair<int, double> closestHandle = findClosestPoint(xclick, yclick, g_handles);
 	if (g_handles.empty() || closestVertex.second < closestHandle.second)
-		g_handles.push_back(*(closestVertex.first));
+		g_handles.push_back(make_pair(closestVertex.first, vertices[closestVertex.first].second));
 	else
-		g_handles.erase(closestHandle.first);
+		;
+		//g_handles.erase(closestHandle.first); 
 }
 
 static void evolveCallback(int whatever) {
@@ -208,7 +209,7 @@ static void evolveCallback(int whatever) {
 static void moveClosestHandle(const int& prevClickX, const int& prevClickY, const int& newClickX, const int& newClickY) {
 	if (g_handles.empty()) return;
 	Cvec2 displacement = Cvec2(2.0*((double)(newClickX - prevClickX)) / g_width, 2.0*((double)(newClickY - prevClickY)) / g_height);
-	g_clickedHandle->second += displacement;
+	//g_clickedHandle->second += displacement;
 	afterMove(g_currentMesh, g_handles);
 	if (!g_updateScheduled) evolveCallback(0);
 }
@@ -446,8 +447,8 @@ static void loadTexture(GLuint texHandle, const char *ppmFilename) {
                0, GL_RGB, GL_UNSIGNED_BYTE, &pixData[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   checkGlErrors();
 }
