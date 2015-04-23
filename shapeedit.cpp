@@ -64,6 +64,8 @@ struct SquareShaderState {
   // Handles to uniform variables
   GLint h_uTex;
   GLint h_uSolid;
+  GLfloat h_uOffsetX;
+  GLfloat h_uOffsetY;
 
   // Handles to vertex attributes
   GLint h_aPosition;
@@ -84,6 +86,8 @@ struct GeometryPX {
 };
 
 static shared_ptr<GeometryPX> g_geometry;
+static shared_ptr<GeometryPX> g_squareGeo;
+
 
 
 // a handle is a pair of an index to a vertex of the mesh and a position
@@ -100,7 +104,7 @@ static bool g_updateScheduled = false;
 
 
 
-static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& geometry, const GlTexture& tex, bool handle) {
+static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& geometry, const GlTexture& tex, bool handle, Cvec2 offset) {
   // using a VAO is necessary to run on OS X.
   glBindVertexArray(geometry.vao);
 
@@ -113,6 +117,8 @@ static void drawSquare(const SquareShaderState& shaderState, const GeometryPX& g
   safe_glUniform1i(shaderState.h_uSolid, 0);
   if (g_wireframeMode || handle)
     safe_glUniform1i(shaderState.h_uSolid, 1);
+  safe_glUniform1f(shaderState.h_uOffsetX, (GLfloat)(offset[0]));
+  safe_glUniform1f(shaderState.h_uOffsetY, (GLfloat)(offset[1]));
 
   // bind vertex buffers
   glBindBuffer(GL_ARRAY_BUFFER, geometry.posVbo);
@@ -147,28 +153,7 @@ static const double g_halfsquaresize = 0.015;
 
 static void drawHandles() {
 	for (vector<handleType>::iterator it = g_handles.begin(); it != g_handles.end(); ++it) {
-		vector<GLfloat> pos;
-		const Cvec2 point0 = it->second + Cvec2(-g_halfsquaresize, g_halfsquaresize);
-		const Cvec2 point1 = it->second + Cvec2(g_halfsquaresize, g_halfsquaresize);
-		const Cvec2 point2 = it->second + Cvec2(-g_halfsquaresize, -g_halfsquaresize);
-		const Cvec2 point3 = it->second + Cvec2(g_halfsquaresize, -g_halfsquaresize);
-		pos.push_back((GLfloat)point0[0]); pos.push_back((GLfloat)point0[1]);
-		pos.push_back((GLfloat)point2[0]); pos.push_back((GLfloat)point2[1]);
-		pos.push_back((GLfloat)point3[0]); pos.push_back((GLfloat)point3[1]);
-		pos.push_back((GLfloat)point0[0]); pos.push_back((GLfloat)point0[1]);
-		pos.push_back((GLfloat)point3[0]); pos.push_back((GLfloat)point3[1]);
-		pos.push_back((GLfloat)point1[0]); pos.push_back((GLfloat)point1[1]);
-
-		GeometryPX temp;
-		glBindBuffer(GL_ARRAY_BUFFER, temp.posVbo);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			12 * sizeof(GLfloat),
-			&pos[0],
-			GL_STATIC_DRAW);
-		checkGlErrors();
-
-		drawSquare(*g_squareShaderState, temp, *g_tex, true);
+		drawSquare(*g_squareShaderState, *g_squareGeo, *g_tex, true, it->second);
 	}
 }
 
@@ -243,6 +228,36 @@ static void loadMeshGeometry(Mesh& m, GeometryPX& g) {
 	checkGlErrors();
 }
 
+static void loadMeshGeometryTenth(Mesh& m, GeometryPX& g) {
+	vector<GLfloat> pos, tex;
+	for (int i = 0; i < m.getNumFaces(); ++i) {
+		const Mesh::Face f = m.getFace(i);
+		for (int j = 0; j < f.getNumVertices(); ++j) {
+			const Mesh::Vertex v = f.getVertex(j);
+			pos.push_back((GLfloat)(v.getPosition()[0] * 0.1));
+			pos.push_back((GLfloat)(v.getPosition()[1] * 0.1));
+			tex.push_back((GLfloat)v.getTexCoords()[0]);
+			tex.push_back((GLfloat)v.getTexCoords()[1]);
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, g.posVbo);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		(pos.size())*sizeof(GLfloat),
+		&pos[0],
+		GL_STATIC_DRAW);
+	checkGlErrors();
+
+	glBindBuffer(GL_ARRAY_BUFFER, g.texVbo);
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		(tex.size())*sizeof(GLfloat),
+		&tex[0],
+		GL_STATIC_DRAW);
+	checkGlErrors();
+}
+
 // _____________________________________________________
 //|                                                     |
 //|  display                                            |
@@ -260,7 +275,7 @@ static void display(void) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   loadMeshGeometry(g_currentMesh, *g_geometry);
-  drawSquare(*g_squareShaderState, *g_geometry, *g_tex, false);
+  drawSquare(*g_squareShaderState, *g_geometry, *g_tex, false, Cvec2());
   drawHandles();
 
   glutSwapBuffers();
@@ -408,6 +423,8 @@ static void loadSquareShader(SquareShaderState& ss) {
   // Retrieve handles to uniform variables
   ss.h_uTex = safe_glGetUniformLocation(h, "uTex");
   ss.h_uSolid = safe_glGetUniformLocation(h, "uSolid");
+  ss.h_uOffsetX = safe_glGetUniformLocation(h, "uOffsetX");
+  ss.h_uOffsetY = safe_glGetUniformLocation(h, "uOffsetY");
 
   // Retrieve handles to vertex attributes
   ss.h_aPosition = safe_glGetAttribLocation(h, "aPosition");
@@ -432,6 +449,8 @@ static void initMeshAndGeometry() {
   g_currentMesh = g_originalMesh;
   g_geometry.reset(new GeometryPX());
   loadMeshGeometry(g_currentMesh, *g_geometry);
+  g_squareGeo.reset(new GeometryPX());
+  loadMeshGeometryTenth(g_currentMesh, *g_squareGeo);
 }
 
 static void loadTexture(GLuint texHandle, const char *ppmFilename) {
@@ -446,8 +465,8 @@ static void loadTexture(GLuint texHandle, const char *ppmFilename) {
                0, GL_RGB, GL_UNSIGNED_BYTE, &pixData[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   checkGlErrors();
 }
