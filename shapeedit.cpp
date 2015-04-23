@@ -93,8 +93,7 @@ static shared_ptr<GeometryPX> g_handleGeometry;
 // a handle is a pair of an index to a vertex of the mesh and a position
 static vector<handleType> g_handles;
 
-static Mesh g_originalMesh;
-static Mesh g_currentMesh;
+static Mesh g_originalMesh, g_currentMesh, g_squareMesh;
 
 static bool g_wireframeMode;
 static vector<handleType>::iterator g_clickedHandle;
@@ -196,14 +195,14 @@ static void moveClosestHandle(const int& prevClickX, const int& prevClickY, cons
 	if (!g_updateScheduled) evolveCallback(0);
 }
 
-static void loadMeshGeometry(Mesh& m, GeometryPX& g, float posScale) {
+static void loadMeshGeometry(Mesh& m, GeometryPX& g) {
 	vector<GLfloat> pos, tex;
 	for (int i = 0; i < m.getNumFaces(); ++i) {
 		const Mesh::Face f = m.getFace(i);
 		for (int j = 0; j < f.getNumVertices(); ++j) {
 			const Mesh::Vertex v = f.getVertex(j);
-			pos.push_back((GLfloat)(v.getPosition()[0] * posScale));
-			pos.push_back((GLfloat)(v.getPosition()[1] * posScale));
+			pos.push_back((GLfloat)(v.getPosition()[0]));
+			pos.push_back((GLfloat)(v.getPosition()[1]));
 			tex.push_back((GLfloat)v.getTexCoords()[0]);
 			tex.push_back((GLfloat)v.getTexCoords()[1]);
 		}
@@ -237,7 +236,7 @@ static void display(void) {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  loadMeshGeometry(g_currentMesh, *g_geometry, 1.0);
+  loadMeshGeometry(g_currentMesh, *g_geometry);
   drawSquare(*g_squareShaderState, *g_geometry, *g_tex, false, Cvec2());
   drawHandles();
 
@@ -277,14 +276,17 @@ static void reshape(int w, int h) {
 static void mouse(int button, int state, int x, int y) {
   if (button == GLUT_LEFT_BUTTON) {
     if (state == GLUT_DOWN) {
-      // right mouse button has been clicked
+      // left mouse button has been clicked
       g_leftClicked = true;
       g_leftClickX = x;
       g_leftClickY = g_height - y - 1;
+	  Cvec2 point = Cvec2(((double)g_leftClickX) / g_width, ((double)g_leftClickY) / g_height);
+	  point = point * 2 - Cvec2(1.0, 1.0);
+	  cout << point[0] << " " << point[1] << " 0.0" <<  endl;
 	  g_clickedHandle = (findClosestPoint(g_leftClickX, g_leftClickY, g_handles)).first;
     }
     else {
-      // right mouse button has been released
+      // left mouse button has been released
       g_leftClicked = false;
     }
   }
@@ -408,12 +410,13 @@ static void initShaders() {
 
 
 static void initMeshAndGeometry() {
-  g_originalMesh.load("square.mesh");
+  g_squareMesh.load("handle.mesh");
+  g_originalMesh.load("yummy.mesh");
   g_currentMesh = g_originalMesh;
   g_geometry.reset(new GeometryPX());
-  loadMeshGeometry(g_currentMesh, *g_geometry, 1.0);
+  loadMeshGeometry(g_currentMesh, *g_geometry);
   g_handleGeometry.reset(new GeometryPX());
-  loadMeshGeometry(g_originalMesh, *g_handleGeometry, 0.02);
+  loadMeshGeometry(g_squareMesh, *g_handleGeometry);
 }
 
 static void loadTexture(GLuint texHandle, const char *ppmFilename) {
