@@ -93,7 +93,8 @@ static shared_ptr<GeometryPX> g_handleGeometry;
 // a handle is a pair of an index to a vertex of the mesh and a position
 static vector<handleType> g_handles;
 
-static Mesh g_originalMesh, g_currentMesh, g_squareMesh;
+Mesh g_originalMesh;
+static Mesh g_currentMesh, g_squareMesh;
 
 static bool g_wireframeMode;
 static vector<handleType>::iterator g_clickedHandle;
