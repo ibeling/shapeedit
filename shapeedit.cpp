@@ -283,7 +283,6 @@ static void mouse(int button, int state, int x, int y) {
       g_leftClickY = g_height - y - 1;
 	  Cvec2 point = Cvec2(((double)g_leftClickX) / g_width, ((double)g_leftClickY) / g_height);
 	  point = point * 2 - Cvec2(1.0, 1.0);
-	  cout << point[0] << " " << point[1] << " 0.0" <<  endl;
 	  g_clickedHandle = (findClosestPoint(g_leftClickX, g_leftClickY, g_handles)).first;
     }
     else {
