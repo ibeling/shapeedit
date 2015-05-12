@@ -176,10 +176,14 @@ static void addClosestVertexOrDeleteHandle(const int& xclick, const int& yclick)
 		vertices.push_back(make_pair(i, Cvec2(g_currentMesh.getVertex(i).getPosition())));
 	pair<vector<handleType>::iterator, double> closestVertex = findClosestPoint(xclick, yclick, vertices);
 	pair<vector<handleType>::iterator, double> closestHandle = findClosestPoint(xclick, yclick, g_handles);
-	if (g_handles.empty() || closestVertex.second < closestHandle.second)
+	if (g_handles.empty() || closestVertex.second < closestHandle.second) {
 		g_handles.push_back(*(closestVertex.first));
-	else
+		addPin(*(closestVertex.first));
+	}
+	else {
 		g_handles.erase(closestHandle.first);
+		removePin(*(closestHandle.first));
+	}
 }
 
 static void evolveCallback(int whatever) {

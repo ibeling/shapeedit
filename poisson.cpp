@@ -24,6 +24,22 @@ void afterMove(Mesh& m, vector<handleType>& handles) {
 //
 }
 
+// This function is called after a new handle is added
+// with the new handle.
+//
+void addPin(handleType& newHandle) {
+// TODO
+//
+}
+
+// Called when a handle is deleted with the (previous)
+// handle.
+//
+void removePin(handleType& deletedHandle) {
+// TODO
+//
+}
+
 // This function does a single iteration of the algorithm.
 // It must return true if convergence has been achieved,
 // and return false if it hasn't been achieved.
